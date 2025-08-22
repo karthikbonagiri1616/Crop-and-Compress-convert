@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compress, Convert & Crop Images</title>
+<title>Karthik Academy • Compress, Convert & Crop Images</title>
 <!-- Cropper.js -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <style>
-body {font-family:"Segoe UI",sans-serif;margin:0;padding:20px;background:linear-gradient(135deg,#c2c2cf,#c2c2cf);color:#fff;min-height:100vh;}
+body {font-family:"Segoe UI",sans-serif;margin:0;padding:20px;background:linear-gradient(135deg,#ff7eb3,#ff758c);color:#fff;min-height:100vh;}
 h1{text-align:center;font-size:2em;margin-bottom:5px;}
-h4{text-align:center;font-weight:normal;margin-top:0;color:#260c78;}
+h4{text-align:center;font-weight:normal;margin-top:0;color:#ffe;}
 p{text-align:center;margin-bottom:20px;font-size:1em;}
-.card{max-width:900px;margin:auto;background:linear-gradient(135deg,#feacff,#feacff);color:#333;border-radius:16px;padding:25px;box-shadow:0 10px 25px rgba(0,0,0,0.2);}
+.card{max-width:900px;margin:auto;background:linear-gradient(135deg,#fff,#f0f0f8);color:#333;border-radius:16px;padding:25px;box-shadow:0 10px 25px rgba(0,0,0,0.2);}
 .controls{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;}
 label{font-size:14px;font-weight:600;}
 input[type="number"],select,input[type="file"],button{padding:8px;border-radius:8px;border:1px solid #ccc;}
@@ -30,14 +30,56 @@ button.crop{margin-top:5px;background:#ffb347;border:none;color:#fff;padding:6px
 button.remove{background:#ff4c4c;color:#fff;padding:6px 12px;border-radius:10px;position:absolute;top:8px;right:8px;border:none;}
 button.bulk{margin-top:10px;background:linear-gradient(135deg,#ff7eb3,#ff758c);border:none;color:#fff;padding:10px 16px;border-radius:10px;}
 .warning{text-align:center;color:#ff0000;font-weight:bold;margin-top:10px;}
-#cropModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:1000;flex-direction:column;}
-#cropImage{max-width:90%; max-height:80%; border:2px solid #fff;}
-#cropButtons{margin-top:10px;}
-#cropClose{position:absolute;top:10px;right:15px;font-size:30px;background:none;border:none;color:white;cursor:pointer;}
+
+/* Crop Modal Fix */
+#cropModal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+  flex-direction:column;
+}
+#cropContainer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  max-width:95vw;
+  max-height:85vh;
+  width:100%;
+  height:100%;
+}
+#cropImage{
+  max-width:90vw;
+  max-height:90vh;
+  display:block;
+  border:2px solid #fff;
+}
+#cropButtons{
+  margin-top:15px;
+  display:flex;
+  gap:10px;
+}
+#cropClose{
+  position:absolute;
+  top:15px;
+  right:20px;
+  font-size:30px;
+  background:none;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+  z-index:1001;
+}
 </style>
 </head>
 <body>
-<h1>Compress, Convert & Crop Images</h1>
+<h1>Karthik Academy • Compress, Convert & Crop Images</h1>
 <h4>Developed by Karthik Bonagiri</h4>
 <p>Upload or drop images, enter size in KB, choose format, crop with draggable box, then download separately or all at once.</p>
 
@@ -57,15 +99,16 @@ button.bulk{margin-top:10px;background:linear-gradient(135deg,#ff7eb3,#ff758c);b
 <button id="bulkDownload" class="bulk">Download All</button>
 </div>
 <div class="warning" id="bulkWarning"></div>
-
-<div id="dropArea" class="drop">?? Drag & drop images here</div>
+<div id="dropArea" class="drop">📁 Drag & drop images here</div>
 <div id="results" class="grid"></div>
 </div>
 
 <!-- Crop Modal -->
 <div id="cropModal">
   <button id="cropClose">&times;</button>
-  <img id="cropImage"/>
+  <div id="cropContainer">
+    <img id="cropImage"/>
+  </div>
   <div id="cropButtons">
     <button id="cropSave" class="compress">Save Crop</button>
     <button id="cropCancel" class="remove">Cancel</button>
@@ -87,6 +130,7 @@ let cropImage=document.getElementById('cropImage');
 let cropper;
 let currentCropItem=null;
 
+// Drag & drop
 dropArea.addEventListener('click',()=>fileInput.click());
 dropArea.addEventListener('dragover',e=>{e.preventDefault(); dropArea.style.borderColor="#764ba2"});
 dropArea.addEventListener('dragleave',e=>{dropArea.style.borderColor="#ff7eb3"});
@@ -127,13 +171,15 @@ function renderItem(obj){
   el.querySelector('.compress').addEventListener('click',()=>compressAndDownload(obj,null));
 }
 
+// Bulk download
 bulkDownload.addEventListener('click',async()=>{
   if(items.length===0)return;
-  bulkWarning.textContent="?? Bulk download will save all files directly to your Downloads folder.";
+  bulkWarning.textContent="📥 Bulk download will save all files directly.";
   for(const obj of items) await compressAndDownload(obj,null,false);
   setTimeout(()=>bulkWarning.textContent="",4000);
 });
 
+// Save file
 async function saveFile(blob,filename){
   if('showSaveFilePicker' in window){
     try{
@@ -151,6 +197,7 @@ async function saveFile(blob,filename){
   }
 }
 
+// Compress & download
 async function compressAndDownload(obj, el=null, saveAs=true){
   const maxKB=parseInt(sizeInput.value);
   const outType=outFormatSelect.value;
@@ -204,13 +251,23 @@ document.getElementById('cropSave').addEventListener('click',()=>{
     const canvas=cropper.getCroppedCanvas();
     canvas.toBlob(blob=>{
       currentCropItem.file=new File([blob],currentCropItem.file.name,{type:currentCropItem.file.type});
+      URL.revokeObjectURL(currentCropItem.url);
       currentCropItem.url=URL.createObjectURL(currentCropItem.file);
-      document.querySelectorAll('.item img').forEach(imgEl=>{
-        if(imgEl.src.includes(currentCropItem.file.name)) imgEl.src=currentCropItem.url;
+
+      // Update thumbnail
+      const itemsEls=document.querySelectorAll('.item');
+      itemsEls.forEach(el=>{
+        const imgEl=el.querySelector('img.thumb');
+        const nameText=el.querySelector('.meta small');
+        if(nameText.textContent.includes(currentCropItem.file.name)){
+          imgEl.src=currentCropItem.url;
+          nameText.textContent=`${currentCropItem.file.name} (${(currentCropItem.file.size/1024).toFixed(1)} KB)`;
+        }
       });
+
       cropper.destroy();
       cropModal.style.display='none';
-    });
+    },currentCropItem.file.type || 'image/png',0.95);
   }
 });
 
@@ -219,13 +276,3 @@ document.getElementById('cropClose').addEventListener('click',()=>{if(cropper) c
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
