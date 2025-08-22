@@ -3,362 +3,468 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Compress • Convert • Crop</title>
+<title>KARTHIK ACADEMY — Crop, Compress & Convert</title>
 
 <link href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
 <script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
 
 <style>
-  :root{--accent1:#ff7eb3;--accent2:#764ba2;}
-  body{font-family:Segoe UI,Roboto,Arial;margin:20px;background:linear-gradient(135deg,#ffefef,#fff);color:#222;}
-  .card{max-width:1000px;margin:0 auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.08);}
-  h1{margin:0 0 6px;font-size:20px}
-  p.lead{margin:0 0 18px;color:#555}
-  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
-  .controls label{font-weight:600;font-size:13px;color:#333}
-  input[type="number"], select, input[type="file"], button{padding:8px;border-radius:8px;border:1px solid #dcdcdc}
-  .drop{border:2px dashed var(--accent1);padding:22px;border-radius:12px;text-align:center;color:var(--accent2);cursor:pointer;background:#fff8fb}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}
-  .item{background:#fafafa;padding:10px;border-radius:10px;border:1px solid #eee;position:relative;display:flex;flex-direction:column;align-items:stretch}
-  .thumb{width:100%;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e6e6e6}
-  .meta{margin-top:8px;font-size:13px;color:#444}
-  .meta small{display:block;color:#666;margin-top:6px}
-  .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-  button.action{flex:1;padding:8px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
-  button.crop{background:#ffb347;color:#fff}
-  button.compress{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
-  button.remove{background:#ff4c4c;color:#fff;position:absolute;top:8px;right:8px;border:none;padding:6px 8px;border-radius:8px}
-  .bulkRow{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
-  .warning{color:#b00020;font-weight:700}
-  /* Crop modal */
-  #cropModal{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:999;padding:18px;}
-  .cropBox{background:#fff;padding:14px;border-radius:10px;max-width:100%;width:920px;max-height:90vh;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:10px}
-  #cropImage{max-width:90vw; max-height:80vh; display:block; margin:auto; border-radius:8px; border:2px solid #eee; object-fit:contain}
-  #cropControls{display:flex;gap:8px;align-items:center;width:100%;justify-content:center}
-  #cropZoom{width:220px}
-  .closeCrop{position:absolute;top:12px;right:18px;background:none;border:none;color:#fff;font-size:30px;cursor:pointer}
-  @media (max-width:560px){ .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))} .thumb{height:110px} }
+  :root{
+    --bg1:#e8f5ff; /* light blue */
+    --accentA:#0072ff; /* blue */
+    --accentB:#00c853; /* green */
+    --card:#ffffff;
+    --muted:#67748a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg,var(--bg1),#f7fff1);
+    color:#21343b;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    min-height:100vh;
+    padding:28px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+  }
+
+  .wrap{width:100%;max-width:1000px}
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  header .title{
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:1px;
+    background:linear-gradient(90deg,var(--accentA),var(--accentB));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  header .subtitle{color:var(--muted); font-weight:600; font-size:14px}
+
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 10px 30px rgba(16,39,63,0.08);
+  }
+
+  .top-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .file-input {
+    position:relative;
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 14px;
+    border-radius:10px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    color:white;
+  }
+  .btn.upload{background:linear-gradient(90deg,var(--accentA),#2aa1ff);}
+  .btn.crop{background:linear-gradient(90deg,#00b894,var(--accentB));}
+  .btn.convert{background:linear-gradient(90deg,var(--accentA),var(--accentB));}
+  .btn.reset{background:#f44336}
+
+  input[type=file]{display:none}
+
+  /* preview area */
+  .preview-wrap{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+  .preview{
+    width:420px;
+    max-width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid #e6eef7;
+    background:#fbfdff;
+    padding:8px;
+    text-align:center;
+  }
+  .preview img{
+    max-width:100%;
+    max-height:60vh;
+    object-fit:contain;
+    display:block;
+    margin:0 auto;
+  }
+
+  /* controls */
+  .controls{
+    min-width:260px;
+    max-width:360px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .field{display:flex;flex-direction:column;gap:6px}
+  label.small{font-size:13px;color:var(--muted);font-weight:700}
+  select,input[type=number],input[type=range]{
+    padding:8px;border-radius:8px;border:1px solid #d7e6fb;background:#fff;
+  }
+  .hint{font-size:12px;color:#6b7280}
+
+  /* modal cropper */
+  #cropModal{
+    position:fixed;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;
+  }
+  .cropBox{
+    width:90%;
+    max-width:900px;
+    background:#fff;
+    border-radius:12px;
+    padding:14px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  #cropImage{
+    max-width:100%;
+    max-height:70vh;
+    object-fit:contain;
+    border-radius:6px;
+  }
+  .cropActions{display:flex;gap:10px;align-items:center}
+  .cropZoom{width:220px}
+
+  /* small responsive */
+  @media (max-width:880px){
+    .preview-wrap{flex-direction:column;align-items:center}
+    .controls{width:100%}
+  }
+
+  .note{font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Compress • Convert • Crop Images</h1>
-    <p class="lead">Drop or choose images. Crop (centered preview), convert format, compress to target KB and download single / all.</p>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="title">KARTHIK ACADEMY</div>
+        <div class="subtitle">Crop • Compress • Convert</div>
+      </div>
+      <div class="note">Professional blue–green theme</div>
+    </header>
 
-    <div class="controls">
-      <label>Target size (KB):
-        <input id="sizeInput" type="number" min="0" value="200" style="width:100px;margin-left:6px">
-      </label>
+    <div class="card">
+      <div class="top-row">
+        <div class="file-input">
+          <label class="btn upload" for="fileInput">📤 Upload Image</label>
+          <input id="fileInput" type="file" accept="image/*">
+        </div>
 
-      <label>Format:
-        <select id="outFormat" style="margin-left:6px">
-          <option value="image/jpeg">JPG</option>
-          <option value="image/png">PNG</option>
-          <option value="image/webp">WebP</option>
-        </select>
-      </label>
+        <button id="openCropBtn" class="btn crop" style="display:none">✂️ Crop Image</button>
+        <button id="resetBtn" class="btn reset" style="display:none">Reset</button>
+      </div>
 
-      <input id="fileInput" type="file" accept="image/*" multiple style="margin-left:6px">
-      <button id="bulkDownload" class="action" style="background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;width:auto">Download All</button>
+      <div class="preview-wrap">
+        <div class="preview">
+          <div class="note" style="margin-bottom:8px">Preview</div>
+          <img id="previewImage" alt="Preview will appear here">
+        </div>
+
+        <div class="controls">
+          <div class="field">
+            <label class="small">Convert To</label>
+            <select id="outFormat">
+              <option value="image/jpeg">JPG (recommended)</option>
+              <option value="image/png">PNG</option>
+              <option value="image/webp">WebP</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="small">Quality (for JPG / WebP)</label>
+            <input id="qualityRange" type="range" min="0.1" max="1" step="0.05" value="0.85">
+            <div class="hint" id="qualityVal">Quality: 85%</div>
+          </div>
+
+          <div class="field">
+            <label class="small">Target size (KB) — optional</label>
+            <input id="targetKB" type="number" min="0" placeholder="e.g. 200 (0 = ignore)" />
+            <div class="hint">If set, tool will try quality → downscale to reach target size.</div>
+          </div>
+
+          <div class="field">
+            <button id="convertDownloadBtn" class="btn convert" disabled>⬇️ Convert & Download</button>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div id="dropArea" class="drop">📁 Drag & drop images here or click to choose</div>
-    <div id="bulkWarning" class="warning" style="margin-top:10px"></div>
-
-    <div id="results" class="grid"></div>
   </div>
 
   <!-- Crop Modal -->
   <div id="cropModal" aria-hidden="true">
-    <button class="closeCrop" id="cropClose">&times;</button>
-    <div class="cropBox" role="dialog" aria-modal="true">
-      <img id="cropImage" alt="Crop preview">
-      <div id="cropControls">
-        <input type="range" id="cropZoom" min="0.2" max="3" step="0.01" value="1" />
-        <button id="cropSave" class="action compress">Save Crop</button>
-        <button id="cropCancel" class="action remove">Cancel</button>
+    <div class="cropBox">
+      <img id="cropImage" alt="">
+      <div class="cropActions">
+        <input id="cropZoom" class="cropZoom" type="range" min="0.2" max="3" step="0.01" value="1">
+        <button id="cropSaveBtn" class="btn crop">Save Crop</button>
+        <button id="cropCancelBtn" class="btn reset">Cancel</button>
       </div>
     </div>
   </div>
 
 <script>
-/* ——— Helpers ——— */
-const el = id => document.getElementById(id);
-const dropArea = el('dropArea');
-const fileInput = el('fileInput');
-const results = el('results');
-const sizeInput = el('sizeInput');
-const outFormatSelect = el('outFormat');
-const bulkDownload = el('bulkDownload');
-const bulkWarning = el('bulkWarning');
+/* Globals */
+const fileInput = document.getElementById('fileInput');
+const previewImage = document.getElementById('previewImage');
+const openCropBtn = document.getElementById('openCropBtn');
+const resetBtn = document.getElementById('resetBtn');
+const outFormat = document.getElementById('outFormat');
+const qualityRange = document.getElementById('qualityRange');
+const qualityVal = document.getElementById('qualityVal');
+const targetKB = document.getElementById('targetKB');
+const convertDownloadBtn = document.getElementById('convertDownloadBtn');
 
-let items = []; // { file, url, el, thumbEl }
+const cropModal = document.getElementById('cropModal');
+const cropImage = document.getElementById('cropImage');
+const cropZoom = document.getElementById('cropZoom');
+const cropSaveBtn = document.getElementById('cropSaveBtn');
+const cropCancelBtn = document.getElementById('cropCancelBtn');
 
-function toKB(n){ return (n/1024).toFixed(1) + ' KB'; }
-function revokeIfUrl(u){ try{ if(u && u.startsWith('blob:')) URL.revokeObjectURL(u);}catch(e){} }
-
-/* ——— Drag & Drop & file input ——— */
-dropArea.addEventListener('click', () => fileInput.click());
-dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = '#764ba2'; });
-dropArea.addEventListener('dragleave', e => { dropArea.style.borderColor = ''; });
-dropArea.addEventListener('drop', e => {
-  e.preventDefault(); dropArea.style.borderColor = ''; handleFiles([...e.dataTransfer.files]);
-});
-fileInput.addEventListener('change', ()=> handleFiles([...fileInput.files]));
-
-function handleFiles(files){
-  const images = files.filter(f => f.type && f.type.startsWith('image/'));
-  images.forEach(file => addItem(file));
-}
-
-/* ——— Render item ——— */
-function addItem(file){
-  const url = URL.createObjectURL(file);
-  const item = { file, url, el: null, thumbEl: null };
-  items.push(item);
-
-  const div = document.createElement('div');
-  div.className = 'item';
-  div.innerHTML = `
-    <button class="remove" title="Remove">&times;</button>
-    <img class="thumb" src="${url}" alt="${file.name}">
-    <div class="meta">
-      <strong class="fname">${file.name}</strong>
-      <small class="fsize">${toKB(file.size)}</small>
-    </div>
-    <div class="actions">
-      <button class="crop action crop">Crop</button>
-      <button class="compress action compress">Compress & Download</button>
-    </div>
-  `;
-  results.prepend(div);
-
-  item.el = div;
-  item.thumbEl = div.querySelector('.thumb');
-
-  // events
-  div.querySelector('.remove').addEventListener('click', ()=>{
-    revokeIfUrl(item.url);
-    items = items.filter(i => i !== item);
-    div.remove();
-  });
-  div.querySelector('.crop').addEventListener('click', ()=> openCrop(item));
-  div.querySelector('.compress').addEventListener('click', ()=> compressAndDownload(item));
-}
-
-/* ——— Crop modal using Cropper.js ——— */
-const cropModal = el('cropModal');
-const cropImage = el('cropImage');
-const cropZoom = el('cropZoom');
-const cropSave = el('cropSave');
-const cropCancel = el('cropCancel');
-const cropClose = el('cropClose');
-
+let originalFile = null;
+let originalURL = null;
 let cropper = null;
-let currentCropItem = null;
+let croppedCanvas = null; // stores cropped result canvas
 
-function openCrop(item){
-  currentCropItem = item;
-  cropImage.src = item.url;
+/* Helpers */
+function enableControls(enabled){
+  openCropBtn.style.display = enabled ? 'inline-flex' : 'none';
+  resetBtn.style.display = enabled ? 'inline-flex' : 'none';
+  convertDownloadBtn.disabled = !enabled;
+}
+
+/* Update quality label */
+qualityRange.addEventListener('input', ()=>{
+  qualityVal.textContent = `Quality: ${Math.round(parseFloat(qualityRange.value)*100)}%`;
+});
+
+/* File handling */
+fileInput.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  loadOriginalFile(f);
+});
+
+function loadOriginalFile(file){
+  // reset previous
+  if(originalURL) URL.revokeObjectURL(originalURL);
+  originalFile = file;
+  originalURL = URL.createObjectURL(file);
+  previewImage.src = originalURL;
+  croppedCanvas = null; // reset cropped
+  enableControls(true);
+}
+
+/* Reset */
+resetBtn.addEventListener('click', ()=>{
+  if(originalURL) previewImage.src = originalURL;
+  croppedCanvas = null;
+});
+
+/* Open crop modal */
+openCropBtn.addEventListener('click', ()=>{
+  if(!originalFile && !previewImage.src) return;
+  // set crop image source: if cropped exists use that, else original
+  if(croppedCanvas){
+    cropImage.src = croppedCanvas.toDataURL();
+  } else {
+    cropImage.src = originalURL;
+  }
+  openCropModal();
+});
+
+function openCropModal(){
   cropModal.style.display = 'flex';
   cropModal.setAttribute('aria-hidden','false');
-
-  // ensure previous destroyed
-  if(cropper) { try{ cropper.destroy(); }catch(e){} cropper = null; }
-  cropImage.onload = () => {
-    // initialize cropper
+  // destroy previous
+  if(cropper){ try{ cropper.destroy(); }catch(e){} cropper=null; }
+  cropImage.onload = ()=>{
     cropper = new Cropper(cropImage, {
-      viewMode: 1,
-      autoCropArea: 0.9,
-      movable: true,
-      zoomable: true,
-      scalable: false,
-      rotatable: false,
-      responsive: true,
+      viewMode:1,
+      autoCropArea:0.9,
+      movable:true,
+      zoomable:true,
+      responsive:true,
     });
-    // reset zoom slider (we will use zoomTo based on slider)
     cropZoom.value = 1;
   };
 }
 
+/* crop zoom slider */
 cropZoom.addEventListener('input', ()=>{
-  if(cropper) {
-    const v = parseFloat(cropZoom.value);
-    // zoomTo expects ratio relative to image; using zoomTo is fine
-    try{ cropper.zoomTo(v); } catch(e) {}
+  if(cropper){
+    try{ cropper.zoomTo(parseFloat(cropZoom.value)); }catch(e){}
   }
 });
 
-cropSave.addEventListener('click', async ()=>{
-  if(!cropper || !currentCropItem) return;
+/* save crop */
+cropSaveBtn.addEventListener('click', async ()=>{
+  if(!cropper) return;
   try{
-    // get cropped canvas in original resolution
-    const canvas = cropper.getCroppedCanvas({ fillColor: '#fff' });
-    if(!canvas) throw new Error('Could not get canvas from cropper');
-
-    // convert to blob (use original file type for now)
-    const blob = await new Promise(res => canvas.toBlob(res, currentCropItem.file.type || 'image/png', 0.95));
-    // replace file and url
-    revokeIfUrl(currentCropItem.url);
-    const newFile = new File([blob], currentCropItem.file.name, { type: blob.type });
-    currentCropItem.file = newFile;
-    currentCropItem.url = URL.createObjectURL(newFile);
-    // update thumbnail
-    currentCropItem.thumbEl.src = currentCropItem.url;
-    currentCropItem.el.querySelector('.fsize').textContent = toKB(newFile.size);
-
-    // close modal
-    cropper.destroy(); cropper = null;
-    cropModal.style.display = 'none';
-    cropModal.setAttribute('aria-hidden','true');
+    const canvas = cropper.getCroppedCanvas({ fillColor:'#fff' });
+    if(!canvas) throw new Error('Crop failed');
+    // Keep croppedCanvas for further ops
+    croppedCanvas = canvas;
+    // update preview
+    previewImage.src = canvas.toDataURL('image/png');
+    // close
+    closeCropModal();
   }catch(err){
-    console.error('Crop save error', err);
     alert('Crop failed: '+err.message);
   }
 });
 
-function closeCrop(){
-  if(cropper){ try{ cropper.destroy(); }catch(e){} cropper = null; }
-  cropModal.style.display = 'none';
+cropCancelBtn.addEventListener('click', closeCropModal);
+function closeCropModal(){
+  if(cropper){ try{ cropper.destroy(); }catch(e){} cropper=null; }
+  cropModal.style.display='none';
   cropModal.setAttribute('aria-hidden','true');
 }
-cropCancel.addEventListener('click', closeCrop);
-cropClose.addEventListener('click', closeCrop);
 
-/* ——— Compression & conversion ——— */
+/* Convert & Download logic */
+convertDownloadBtn.addEventListener('click', async ()=>{
+  // get canvas to work on: croppedCanvas or create from previewImage (original)
+  let srcCanvas;
+  if(croppedCanvas){
+    srcCanvas = croppedCanvas;
+  } else {
+    // create canvas from previewImage (originalURL)
+    if(!previewImage.src) { alert('Please upload an image first'); return; }
+    srcCanvas = await imageToCanvas(previewImage);
+  }
 
-function loadImageFromFile(file){ // returns HTMLImageElement
-  return new Promise((resolve,reject)=>{
+  const outType = outFormat.value;
+  const quality = parseFloat(qualityRange.value);
+  const maxKB = Math.max(0, parseInt(targetKB.value) || 0);
+
+  // show user busy state
+  convertDownloadBtn.textContent = 'Processing...';
+  convertDownloadBtn.disabled = true;
+
+  try{
+    const blob = await compressCanvasToTarget(srcCanvas, outType, quality, maxKB);
+    // download
+    const ext = outType === 'image/png' ? 'png' : (outType === 'image/webp' ? 'webp' : 'jpg');
+    const name = (originalFile && originalFile.name) ? originalFile.name.replace(/\.[^.]+$/,'') : 'image';
+    const filename = `${name}-converted.${ext}`;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+  }catch(err){
+    console.error(err);
+    alert('Conversion failed: '+ (err.message || err));
+  }finally{
+    convertDownloadBtn.textContent = '⬇️ Convert & Download';
+    convertDownloadBtn.disabled = false;
+  }
+});
+
+/* Utility: draw image element to canvas at its natural resolution */
+function imageToCanvas(imgEl){
+  return new Promise((resolve, reject)=>{
     const img = new Image();
-    img.onload = ()=> resolve(img);
-    img.onerror = e => reject(e);
-    img.src = URL.createObjectURL(file);
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      resolve(canvas);
+    };
+    img.onerror = (e)=> reject(e);
+    // use current src (dataurl or object url)
+    img.src = imgEl.src;
   });
 }
 
-async function compressAndDownload(item){
-  try{
-    const maxKB = Math.max(0, parseInt(sizeInput.value) || 0);
-    const outType = outFormatSelect.value;
-    const blob = await compressToTargetSize(item.file, maxKB, outType);
-    const ext = outType === 'image/png' ? '.png' : (outType === 'image/webp' ? '.webp' : '.jpg');
-    const base = item.file.name.replace(/\.[^.]+$/,'');
-    const filename = base + '-converted' + ext;
-    await saveFile(blob, filename);
-  }catch(err){
-    console.error(err);
-    alert('Compression failed: '+ (err.message || err));
-  }
+/* Utility: canvas -> blob promise */
+function canvasToBlob(canvas, type='image/jpeg', quality=0.92){
+  return new Promise((resolve)=>{
+    canvas.toBlob(blob => resolve(blob), type, quality);
+  });
 }
 
-async function compressToTargetSize(file, maxKB, outType){
-  // if user wants no limit (0 => keep original)
-  if(maxKB === 0) {
-    // just convert format if needed
-    return convertFormat(file, outType);
+/* Main compression attempt: tries quality decreasing, then downscale if needed */
+async function compressCanvasToTarget(srcCanvasInput, outType, startQuality, maxKB){
+  // if no target KB, just convert with given quality
+  if(!maxKB || maxKB <= 0){
+    const blob = await canvasToBlob(srcCanvasInput, outType, (outType==='image/png')?1:startQuality);
+    return blob;
   }
 
-  // Try reducing quality first
-  let quality = 0.92;
-  let blob = await convertWithQuality(file, outType, quality);
-  // reduce quality
+  // Make a clone canvas we can downscale progressively
+  let canvas = document.createElement('canvas');
+  canvas.width = srcCanvasInput.width;
+  canvas.height = srcCanvasInput.height;
+  let ctx = canvas.getContext('2d');
+  ctx.drawImage(srcCanvasInput,0,0,canvas.width,canvas.height);
+
+  // Try decreasing quality first
+  let quality = startQuality;
+  let blob = await canvasToBlob(canvas, outType, (outType==='image/png')?1:quality);
+  // Loop quality down
   while(blob.size/1024 > maxKB && quality > 0.05){
-    quality -= 0.06;
-    blob = await convertWithQuality(file, outType, quality);
+    quality = Math.max(0.05, quality - 0.07);
+    blob = await canvasToBlob(canvas, outType, (outType==='image/png')?1:quality);
   }
 
-  // If still large, downscale dimensions progressively
-  if(blob.size/1024 > maxKB){
-    const img = await loadImageFromFile(file);
-    let width = img.naturalWidth;
-    let height = img.naturalHeight;
-    // loop until size ok or small enough dimensions
-    while(blob.size/1024 > maxKB && Math.max(width,height) > 200){
-      width = Math.round(width * 0.9);
-      height = Math.round(height * 0.9);
-      blob = await convertByResize(img, width, height, outType, Math.max(0.5, quality));
+  // If still too big, downscale stepwise
+  let attempts = 0;
+  while(blob.size/1024 > maxKB && attempts < 12 && (canvas.width>200 || canvas.height>200)){
+    attempts++;
+    const newW = Math.round(canvas.width * 0.85);
+    const newH = Math.round(canvas.height * 0.85);
+    const newCanvas = document.createElement('canvas');
+    newCanvas.width = newW;
+    newCanvas.height = newH;
+    const newCtx = newCanvas.getContext('2d');
+    // draw scaled
+    newCtx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,newW,newH);
+    canvas = newCanvas;
+    // try again with reasonable quality (not lower than 0.45)
+    const useQuality = Math.max(0.45, quality);
+    blob = await canvasToBlob(canvas, outType, (outType==='image/png')?1:useQuality);
+    // slightly reduce quality if still big
+    if(blob.size/1024 > maxKB){
+      quality = Math.max(0.25, quality - 0.07);
     }
   }
 
   return blob;
 }
 
-function convertWithQuality(file, outType, quality){
-  return new Promise(async (resolve,reject)=>{
-    try{
-      const img = await loadImageFromFile(file);
-      // keep original dimensions then compress via canvas
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img,0,0);
-      canvas.toBlob(b => resolve(b), outType, quality);
-    }catch(e){ reject(e); }
+/* enable convert when file present */
+(function(){
+  // watch previewImage src
+  const obs = new MutationObserver(()=> {
+    const has = !!previewImage.src;
+    enableControls(has);
   });
-}
+  obs.observe(previewImage, { attributes:true, attributeFilter:['src']});
+})();
 
-function convertByResize(img, targetW, targetH, outType, quality){
-  return new Promise((resolve)=>{
-    const canvas = document.createElement('canvas');
-    canvas.width = targetW;
-    canvas.height = targetH;
-    const ctx = canvas.getContext('2d');
-    // draw with cover fitting while preserving aspect ratio
-    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, targetW, targetH);
-    canvas.toBlob(b => resolve(b), outType, quality);
-  });
-}
-
-function convertFormat(file, outType){ // just convert without compression
-  return new Promise(async (resolve)=>{
-    try{
-      const img = await loadImageFromFile(file);
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img,0,0);
-      canvas.toBlob(b => resolve(b), outType, 0.95);
-    }catch(e){
-      resolve(file); // fallback
-    }
-  });
-}
-
-/* ——— Save (download) ——— */
-async function saveFile(blob, filename){
-  const a = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 5000);
-}
-
-/* ——— Bulk download ——— */
-bulkDownload.addEventListener('click', async ()=>{
-  if(items.length === 0){ bulkWarning.textContent = 'No images to download'; setTimeout(()=>bulkWarning.textContent='','3000'); return; }
-  bulkWarning.textContent = `Preparing ${items.length} file(s)...`;
-  const maxKB = Math.max(0, parseInt(sizeInput.value) || 0);
-  const outType = outFormatSelect.value;
-  // iterate sequentially to avoid CPU spike
-  for(let i=0;i<items.length;i++){
-    const it = items[i];
-    try{
-      const blob = await compressToTargetSize(it.file, maxKB, outType);
-      const ext = outType === 'image/png' ? '.png' : (outType === 'image/webp' ? '.webp' : '.jpg');
-      const base = it.file.name.replace(/\.[^.]+$/,'');
-      const fname = base + '-converted' + ext;
-      await saveFile(blob, fname);
-    }catch(err){
-      console.error('bulk item failed', err);
-    }
-  }
-  bulkWarning.textContent = `Downloaded ${items.length} file(s)`;
-  setTimeout(()=>bulkWarning.textContent='', 3000);
+/* cleanup objecturls on unload */
+window.addEventListener('beforeunload', ()=>{
+  try{ if(originalURL) URL.revokeObjectURL(originalURL); }catch(e){}
 });
 </script>
 </body>
