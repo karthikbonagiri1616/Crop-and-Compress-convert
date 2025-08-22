@@ -1,104 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crop and Compress Image</title>
-  <link href="https://unpkg.com/cropperjs/dist/cropper.min.css" rel="stylesheet"/>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #f8f9fa;
-    }
-    h1 {
-      margin: 10px;
-      font-size: 22px;
-      color: #333;
-    }
-    #preview {
-      max-width: 90%;
-      max-height: 400px; /* limits big images */
-      display: block;
-      margin: 10px auto;
-    }
-    .buttons {
-      margin: 15px;
-    }
-    button {
-      padding: 10px 15px;
-      margin: 5px;
-      border: none;
-      border-radius: 6px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Compress • Convert • Crop</title>
+
+<link href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
+<script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
+
+<style>
+  :root{--accent1:#ff7eb3;--accent2:#764ba2;}
+  body{font-family:Segoe UI,Roboto,Arial;margin:20px;background:linear-gradient(135deg,#ffefef,#fff);color:#222;}
+  .card{max-width:1000px;margin:0 auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.08);}
+  h1{margin:0 0 6px;font-size:20px}
+  p.lead{margin:0 0 18px;color:#555}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .controls label{font-weight:600;font-size:13px;color:#333}
+  input[type="number"], select, input[type="file"], button{padding:8px;border-radius:8px;border:1px solid #dcdcdc}
+  .drop{border:2px dashed var(--accent1);padding:22px;border-radius:12px;text-align:center;color:var(--accent2);cursor:pointer;background:#fff8fb}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px}
+  .item{background:#fafafa;padding:10px;border-radius:10px;border:1px solid #eee;position:relative;display:flex;flex-direction:column;align-items:stretch}
+  .thumb{width:100%;height:140px;object-fit:cover;border-radius:8px;border:1px solid #e6e6e6}
+  .meta{margin-top:8px;font-size:13px;color:#444}
+  .meta small{display:block;color:#666;margin-top:6px}
+  .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  button.action{flex:1;padding:8px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+  button.crop{background:#ffb347;color:#fff}
+  button.compress{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+  button.remove{background:#ff4c4c;color:#fff;position:absolute;top:8px;right:8px;border:none;padding:6px 8px;border-radius:8px}
+  .bulkRow{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .warning{color:#b00020;font-weight:700}
+  /* Crop modal */
+  #cropModal{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:999;padding:18px;}
+  .cropBox{background:#fff;padding:14px;border-radius:10px;max-width:100%;width:920px;max-height:90vh;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:10px}
+  #cropImage{max-width:90vw; max-height:80vh; display:block; margin:auto; border-radius:8px; border:2px solid #eee; object-fit:contain}
+  #cropControls{display:flex;gap:8px;align-items:center;width:100%;justify-content:center}
+  #cropZoom{width:220px}
+  .closeCrop{position:absolute;top:12px;right:18px;background:none;border:none;color:#fff;font-size:30px;cursor:pointer}
+  @media (max-width:560px){ .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))} .thumb{height:110px} }
+</style>
 </head>
 <body>
-  <h1>Crop and Compress Image</h1>
-  <input type="file" id="fileInput" accept="image/*">
-  <img id="preview" alt="Image Preview">
+  <div class="card">
+    <h1>Compress • Convert • Crop Images</h1>
+    <p class="lead">Drop or choose images. Crop (centered preview), convert format, compress to target KB and download single / all.</p>
 
-  <div class="buttons">
-    <button id="cropBtn">Crop & Compress</button>
-    <a id="downloadLink" download="compressed.jpg">
-      <button>Download</button>
-    </a>
+    <div class="controls">
+      <label>Target size (KB):
+        <input id="sizeInput" type="number" min="0" value="200" style="width:100px;margin-left:6px">
+      </label>
+
+      <label>Format:
+        <select id="outFormat" style="margin-left:6px">
+          <option value="image/jpeg">JPG</option>
+          <option value="image/png">PNG</option>
+          <option value="image/webp">WebP</option>
+        </select>
+      </label>
+
+      <input id="fileInput" type="file" accept="image/*" multiple style="margin-left:6px">
+      <button id="bulkDownload" class="action" style="background:linear-gradient(135deg,var(--accent1),var(--accent2));color:#fff;width:auto">Download All</button>
+    </div>
+
+    <div id="dropArea" class="drop">📁 Drag & drop images here or click to choose</div>
+    <div id="bulkWarning" class="warning" style="margin-top:10px"></div>
+
+    <div id="results" class="grid"></div>
   </div>
 
-  <script src="https://unpkg.com/cropperjs"></script>
-  <script>
-    const fileInput = document.getElementById("fileInput");
-    const preview = document.getElementById("preview");
-    const cropBtn = document.getElementById("cropBtn");
-    const downloadLink = document.getElementById("downloadLink");
-    let cropper;
+  <!-- Crop Modal -->
+  <div id="cropModal" aria-hidden="true">
+    <button class="closeCrop" id="cropClose">&times;</button>
+    <div class="cropBox" role="dialog" aria-modal="true">
+      <img id="cropImage" alt="Crop preview">
+      <div id="cropControls">
+        <input type="range" id="cropZoom" min="0.2" max="3" step="0.01" value="1" />
+        <button id="cropSave" class="action compress">Save Crop</button>
+        <button id="cropCancel" class="action remove">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+<script>
+/* ——— Helpers ——— */
+const el = id => document.getElementById(id);
+const dropArea = el('dropArea');
+const fileInput = el('fileInput');
+const results = el('results');
+const sizeInput = el('sizeInput');
+const outFormatSelect = el('outFormat');
+const bulkDownload = el('bulkDownload');
+const bulkWarning = el('bulkWarning');
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        preview.src = event.target.result;
+let items = []; // { file, url, el, thumbEl }
 
-        if (cropper) cropper.destroy();
+function toKB(n){ return (n/1024).toFixed(1) + ' KB'; }
+function revokeIfUrl(u){ try{ if(u && u.startsWith('blob:')) URL.revokeObjectURL(u);}catch(e){} }
 
-        // Wait for image to load before cropper
-        preview.onload = () => {
-          cropper = new Cropper(preview, {
-            aspectRatio: NaN,
-            viewMode: 1,
-            autoCropArea: 1,
-          });
-        };
-      };
-      reader.readAsDataURL(file);
+/* ——— Drag & Drop & file input ——— */
+dropArea.addEventListener('click', () => fileInput.click());
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = '#764ba2'; });
+dropArea.addEventListener('dragleave', e => { dropArea.style.borderColor = ''; });
+dropArea.addEventListener('drop', e => {
+  e.preventDefault(); dropArea.style.borderColor = ''; handleFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', ()=> handleFiles([...fileInput.files]));
+
+function handleFiles(files){
+  const images = files.filter(f => f.type && f.type.startsWith('image/'));
+  images.forEach(file => addItem(file));
+}
+
+/* ——— Render item ——— */
+function addItem(file){
+  const url = URL.createObjectURL(file);
+  const item = { file, url, el: null, thumbEl: null };
+  items.push(item);
+
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.innerHTML = `
+    <button class="remove" title="Remove">&times;</button>
+    <img class="thumb" src="${url}" alt="${file.name}">
+    <div class="meta">
+      <strong class="fname">${file.name}</strong>
+      <small class="fsize">${toKB(file.size)}</small>
+    </div>
+    <div class="actions">
+      <button class="crop action crop">Crop</button>
+      <button class="compress action compress">Compress & Download</button>
+    </div>
+  `;
+  results.prepend(div);
+
+  item.el = div;
+  item.thumbEl = div.querySelector('.thumb');
+
+  // events
+  div.querySelector('.remove').addEventListener('click', ()=>{
+    revokeIfUrl(item.url);
+    items = items.filter(i => i !== item);
+    div.remove();
+  });
+  div.querySelector('.crop').addEventListener('click', ()=> openCrop(item));
+  div.querySelector('.compress').addEventListener('click', ()=> compressAndDownload(item));
+}
+
+/* ——— Crop modal using Cropper.js ——— */
+const cropModal = el('cropModal');
+const cropImage = el('cropImage');
+const cropZoom = el('cropZoom');
+const cropSave = el('cropSave');
+const cropCancel = el('cropCancel');
+const cropClose = el('cropClose');
+
+let cropper = null;
+let currentCropItem = null;
+
+function openCrop(item){
+  currentCropItem = item;
+  cropImage.src = item.url;
+  cropModal.style.display = 'flex';
+  cropModal.setAttribute('aria-hidden','false');
+
+  // ensure previous destroyed
+  if(cropper) { try{ cropper.destroy(); }catch(e){} cropper = null; }
+  cropImage.onload = () => {
+    // initialize cropper
+    cropper = new Cropper(cropImage, {
+      viewMode: 1,
+      autoCropArea: 0.9,
+      movable: true,
+      zoomable: true,
+      scalable: false,
+      rotatable: false,
+      responsive: true,
     });
+    // reset zoom slider (we will use zoomTo based on slider)
+    cropZoom.value = 1;
+  };
+}
 
-    cropBtn.addEventListener("click", () => {
-      if (!cropper) return;
+cropZoom.addEventListener('input', ()=>{
+  if(cropper) {
+    const v = parseFloat(cropZoom.value);
+    // zoomTo expects ratio relative to image; using zoomTo is fine
+    try{ cropper.zoomTo(v); } catch(e) {}
+  }
+});
 
-      const canvas = cropper.getCroppedCanvas({
-        maxWidth: 800,
-        maxHeight: 800,
-      });
+cropSave.addEventListener('click', async ()=>{
+  if(!cropper || !currentCropItem) return;
+  try{
+    // get cropped canvas in original resolution
+    const canvas = cropper.getCroppedCanvas({ fillColor: '#fff' });
+    if(!canvas) throw new Error('Could not get canvas from cropper');
 
-      canvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        downloadLink.href = url;
-      }, "image/jpeg", 0.7); // compress at 70%
-    });
-  </script>
+    // convert to blob (use original file type for now)
+    const blob = await new Promise(res => canvas.toBlob(res, currentCropItem.file.type || 'image/png', 0.95));
+    // replace file and url
+    revokeIfUrl(currentCropItem.url);
+    const newFile = new File([blob], currentCropItem.file.name, { type: blob.type });
+    currentCropItem.file = newFile;
+    currentCropItem.url = URL.createObjectURL(newFile);
+    // update thumbnail
+    currentCropItem.thumbEl.src = currentCropItem.url;
+    currentCropItem.el.querySelector('.fsize').textContent = toKB(newFile.size);
+
+    // close modal
+    cropper.destroy(); cropper = null;
+    cropModal.style.display = 'none';
+    cropModal.setAttribute('aria-hidden','true');
+  }catch(err){
+    console.error('Crop save error', err);
+    alert('Crop failed: '+err.message);
+  }
+});
+
+function closeCrop(){
+  if(cropper){ try{ cropper.destroy(); }catch(e){} cropper = null; }
+  cropModal.style.display = 'none';
+  cropModal.setAttribute('aria-hidden','true');
+}
+cropCancel.addEventListener('click', closeCrop);
+cropClose.addEventListener('click', closeCrop);
+
+/* ——— Compression & conversion ——— */
+
+function loadImageFromFile(file){ // returns HTMLImageElement
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=> resolve(img);
+    img.onerror = e => reject(e);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function compressAndDownload(item){
+  try{
+    const maxKB = Math.max(0, parseInt(sizeInput.value) || 0);
+    const outType = outFormatSelect.value;
+    const blob = await compressToTargetSize(item.file, maxKB, outType);
+    const ext = outType === 'image/png' ? '.png' : (outType === 'image/webp' ? '.webp' : '.jpg');
+    const base = item.file.name.replace(/\.[^.]+$/,'');
+    const filename = base + '-converted' + ext;
+    await saveFile(blob, filename);
+  }catch(err){
+    console.error(err);
+    alert('Compression failed: '+ (err.message || err));
+  }
+}
+
+async function compressToTargetSize(file, maxKB, outType){
+  // if user wants no limit (0 => keep original)
+  if(maxKB === 0) {
+    // just convert format if needed
+    return convertFormat(file, outType);
+  }
+
+  // Try reducing quality first
+  let quality = 0.92;
+  let blob = await convertWithQuality(file, outType, quality);
+  // reduce quality
+  while(blob.size/1024 > maxKB && quality > 0.05){
+    quality -= 0.06;
+    blob = await convertWithQuality(file, outType, quality);
+  }
+
+  // If still large, downscale dimensions progressively
+  if(blob.size/1024 > maxKB){
+    const img = await loadImageFromFile(file);
+    let width = img.naturalWidth;
+    let height = img.naturalHeight;
+    // loop until size ok or small enough dimensions
+    while(blob.size/1024 > maxKB && Math.max(width,height) > 200){
+      width = Math.round(width * 0.9);
+      height = Math.round(height * 0.9);
+      blob = await convertByResize(img, width, height, outType, Math.max(0.5, quality));
+    }
+  }
+
+  return blob;
+}
+
+function convertWithQuality(file, outType, quality){
+  return new Promise(async (resolve,reject)=>{
+    try{
+      const img = await loadImageFromFile(file);
+      // keep original dimensions then compress via canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      canvas.toBlob(b => resolve(b), outType, quality);
+    }catch(e){ reject(e); }
+  });
+}
+
+function convertByResize(img, targetW, targetH, outType, quality){
+  return new Promise((resolve)=>{
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    // draw with cover fitting while preserving aspect ratio
+    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, 0, 0, targetW, targetH);
+    canvas.toBlob(b => resolve(b), outType, quality);
+  });
+}
+
+function convertFormat(file, outType){ // just convert without compression
+  return new Promise(async (resolve)=>{
+    try{
+      const img = await loadImageFromFile(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0);
+      canvas.toBlob(b => resolve(b), outType, 0.95);
+    }catch(e){
+      resolve(file); // fallback
+    }
+  });
+}
+
+/* ——— Save (download) ——— */
+async function saveFile(blob, filename){
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+}
+
+/* ——— Bulk download ——— */
+bulkDownload.addEventListener('click', async ()=>{
+  if(items.length === 0){ bulkWarning.textContent = 'No images to download'; setTimeout(()=>bulkWarning.textContent='','3000'); return; }
+  bulkWarning.textContent = `Preparing ${items.length} file(s)...`;
+  const maxKB = Math.max(0, parseInt(sizeInput.value) || 0);
+  const outType = outFormatSelect.value;
+  // iterate sequentially to avoid CPU spike
+  for(let i=0;i<items.length;i++){
+    const it = items[i];
+    try{
+      const blob = await compressToTargetSize(it.file, maxKB, outType);
+      const ext = outType === 'image/png' ? '.png' : (outType === 'image/webp' ? '.webp' : '.jpg');
+      const base = it.file.name.replace(/\.[^.]+$/,'');
+      const fname = base + '-converted' + ext;
+      await saveFile(blob, fname);
+    }catch(err){
+      console.error('bulk item failed', err);
+    }
+  }
+  bulkWarning.textContent = `Downloaded ${items.length} file(s)`;
+  setTimeout(()=>bulkWarning.textContent='', 3000);
+});
+</script>
 </body>
 </html>
