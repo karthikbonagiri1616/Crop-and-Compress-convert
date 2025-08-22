@@ -3,116 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crop and Compress Convert</title>
-  <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.css" />
+  <title>KARTHIK ACADEMY - Crop & Compress</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: #fff;
       text-align: center;
-      background: #f4f4f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
+
+    header {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin-bottom: 20px;
+      background: linear-gradient(45deg, #ff512f, #dd2476, #24c6dc, #514a9d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientMove 6s infinite linear;
+    }
+
+    @keyframes gradientMove {
+      0% {background-position: 0% 50%;}
+      100% {background-position: 100% 50%;}
+    }
+
     .container {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      width: 90%;
       max-width: 600px;
-      margin: 0 auto;
     }
+
     #image {
       max-width: 100%;
-      max-height: 400px; /* limit height */
-      display: block;
-      margin: 20px auto;
+      display: none;
+      border-radius: 10px;
+      margin-top: 15px;
     }
-    canvas {
-      max-width: 100%;
-      margin-top: 20px;
-      border: 1px solid #ccc;
-    }
-    button {
+
+    .btn {
+      display: inline-block;
       margin: 10px;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      background: #007bff;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
       color: #fff;
+      background: linear-gradient(45deg, #0072ff, #00c6ff);
+      border: none;
+      border-radius: 50px;
       cursor: pointer;
+      transition: 0.3s ease-in-out;
+      text-decoration: none;
     }
-    button:hover {
-      background: #0056b3;
+
+    .btn:hover {
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      opacity: 0.8;
     }
   </style>
 </head>
 <body>
+  <header>KARTHIK ACADEMY</header>
+  
   <div class="container">
-    <h2>Crop and Compress Image</h2>
-    <input type="file" id="fileInput" accept="image/*">
-    <img id="image" style="display:none;" />
+    <input type="file" id="upload" accept="image/*" class="btn">
     <br>
-    <button id="cropBtn" style="display:none;">Save Crop</button>
-    <button id="downloadBtn" style="display:none;">Download</button>
-    <canvas id="canvas" style="display:none;"></canvas>
+    <img id="image" alt="Upload an image">
+    <br>
+    <button id="crop" class="btn">Save Crop</button>
+    <button id="download" class="btn">Download</button>
   </div>
 
-  <script src="https://unpkg.com/cropperjs"></script>
+  <footer>© 2025 Karthik Academy</footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const image = document.getElementById('image');
-    const cropBtn = document.getElementById('cropBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const canvas = document.getElementById('canvas');
     let cropper;
+    const upload = document.getElementById('upload');
+    const image = document.getElementById('image');
+    const cropBtn = document.getElementById('crop');
+    const downloadBtn = document.getElementById('download');
+    let croppedCanvas;
 
-    fileInput.addEventListener('change', (e) => {
+    // Upload image
+    upload.addEventListener('change', (e) => {
       const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        image.src = reader.result;
-        image.style.display = 'block';
-        if (cropper) cropper.destroy();
-        cropper = new Cropper(image, {
-          aspectRatio: NaN,
-          viewMode: 1,
-          autoCropArea: 0.7, // keep crop box smaller
-        });
-        cropBtn.style.display = 'inline-block';
-      };
-      reader.readAsDataURL(file);
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          image.src = reader.result;
+          image.style.display = 'block';
+          if (cropper) cropper.destroy();
+          cropper = new Cropper(image, {
+            aspectRatio: NaN,
+            viewMode: 1,
+          });
+        };
+        reader.readAsDataURL(file);
+      }
     });
 
+    // Crop image
     cropBtn.addEventListener('click', () => {
-      if (!cropper) return;
-      const croppedCanvas = cropper.getCroppedCanvas({
-        width: 800, // max width
-        height: 800, // max height
-      });
-
-      // Compress to JPEG
-      const compressedDataUrl = croppedCanvas.toDataURL('image/jpeg', 0.8);
-
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-        canvas.style.display = 'block';
-        downloadBtn.style.display = 'inline-block';
-      };
-      img.src = compressedDataUrl;
-
-      // store result for download
-      downloadBtn.setAttribute("data-url", compressedDataUrl);
+      if (cropper) {
+        croppedCanvas = cropper.getCroppedCanvas();
+        const win = window.open();
+        win.document.write('<img src="' + croppedCanvas.toDataURL('image/jpeg') + '"/>');
+      }
     });
 
+    // Download image
     downloadBtn.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.href = downloadBtn.getAttribute("data-url");
-      link.download = "cropped-image.jpg"; // forces Save As
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (cropper) {
+        croppedCanvas = cropper.getCroppedCanvas({
+          maxWidth: 1024,
+          maxHeight: 1024,
+        });
+        croppedCanvas.toBlob((blob) => {
+          const link = document.createElement('a');
+          link.download = 'cropped-image.jpg';
+          link.href = URL.createObjectURL(blob);
+          link.click();
+        }, 'image/jpeg', 0.9);
+      }
     });
   </script>
 </body>
