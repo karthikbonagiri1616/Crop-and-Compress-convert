@@ -95,7 +95,7 @@ button.bulk{margin-top:10px;background:linear-gradient(135deg,#ff7eb3,#ff758c);b
     <option value="image/webp">WebP</option>
   </select>
 </label>
-<input id="fileInput" type="file" accept="image/*" multiple>
+<input id="fileInput" type="file" accept="image/*" multiple capture="environment">
 <button id="bulkDownload" class="bulk">Download All</button>
 </div>
 <div class="warning" id="bulkWarning"></div>
@@ -276,3 +276,4 @@ document.getElementById('cropClose').addEventListener('click',()=>{if(cropper) c
 </script>
 </body>
 </html>
+
