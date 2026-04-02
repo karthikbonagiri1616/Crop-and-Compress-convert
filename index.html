@@ -1,651 +1,296 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Master Minds - The Learning Hub - Compress Tool</title>
+<title>Master Minds-The Learning Hub - Compress, Convert & Crop Images</title>
 
 <!-- Cropper -->
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <style>
-
-/* RESET */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* {margin:0;padding:0;box-sizing:border-box;}
 
 body {
     font-family: "Segoe UI", sans-serif;
-    padding: 20px;
-    background: linear-gradient(135deg, #020617, #0f172a);
-    color: #fff;
-    min-height: 100vh;
+    padding:20px;
+    background: linear-gradient(135deg, #ff7eb3, #ff758c);
+    color:#fff;
 }
 
-/* HEADER */
-h1 {
-    text-align: center;
-    font-size: 2.4em;
-    background: linear-gradient(90deg, #f97316, #ec4899);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
+h1,h2,h4,p {text-align:center;}
 
-h2 {
-    text-align: center;
-    color: #60a5fa;
-}
-
-h4 {
-    text-align: center;
-    color: #94a3b8;
-}
-
-p {
-    text-align: center;
-    margin-bottom: 25px;
-    color: #cbd5f5;
-}
-
-/* CARD */
 .card {
-    max-width: 1200px;
-    margin: auto;
-    background: #ffffff;
-    color: #111;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    max-width:1200px;
+    margin:auto;
+    background:#fff;
+    color:#333;
+    border-radius:20px;
+    padding:25px;
 }
 
-/* CONTROLS */
 .controls {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 20px;
-    padding: 20px;
-    background: #f8fafc;
-    border-radius: 15px;
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-bottom:20px;
 }
 
-.control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+.control-group {display:flex;flex-direction:column;}
+
+input,select {
+    padding:10px;
+    border-radius:10px;
+    border:2px solid #ddd;
 }
 
-label {
-    font-size: 13px;
-    color: #475569;
-}
-
-/* INPUT */
-input, select {
-    padding: 10px;
-    border-radius: 10px;
-    border: 2px solid #e2e8f0;
-}
-
-/* BUTTON BASE */
 button {
-    cursor: pointer;
-    border: none;
-    border-radius: 10px;
-    padding: 11px 18px;
-    font-weight: 600;
-    transition: 0.3s;
+    padding:10px 15px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
 }
 
-/* BUTTON COLORS */
-.upload-btn {
-    background: linear-gradient(135deg, #f97316, #fb923c);
-    color: #fff;
-}
-.upload-btn:hover {
-    transform: translateY(-2px);
-}
+.upload-btn {background:#667eea;color:#fff;}
+.bulk-btn {background:#ff758c;color:#fff;}
+.compress-btn {background:#667eea;color:#fff;width:100%;margin-top:8px;}
+.crop-btn {background:#ffb347;color:#fff;width:100%;margin-top:8px;}
+.remove-btn {background:red;color:#fff;position:absolute;top:5px;right:5px;}
 
-.bulk-btn {
-    background: linear-gradient(135deg, #020617, #1e293b);
-    color: #fff;
-}
-.bulk-btn:hover {
-    transform: translateY(-2px);
-}
-
-.compress-btn {
-    background: linear-gradient(135deg, #2563eb, #60a5fa);
-    color: #fff;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.crop-btn {
-    background: linear-gradient(135deg, #ec4899, #f472b6);
-    color: #fff;
-    width: 100%;
-    margin-top: 8px;
-}
-
-.remove-btn {
-    background: #ef4444;
-    color: #fff;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-}
-
-/* DROP AREA */
 .drop {
-    border: 2px dashed #f97316;
-    border-radius: 15px;
-    padding: 50px;
-    text-align: center;
-    background: #fff7ed;
-    color: #ea580c;
-    transition: 0.3s;
-}
-.drop:hover {
-    background: #ffedd5;
+    border:2px dashed #ff758c;
+    padding:40px;
+    text-align:center;
+    margin-bottom:20px;
+    cursor:pointer;
 }
 
-/* GRID */
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 15px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:15px;
 }
 
 .item {
-    background: #fff;
-    border-radius: 15px;
-    padding: 12px;
-    position: relative;
-    transition: 0.3s;
-}
-.item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    background:#fafafa;
+    border-radius:15px;
+    padding:10px;
+    position:relative;
 }
 
 .thumb {
-    width: 100%;
-    height: 170px;
-    object-fit: cover;
-    border-radius: 10px;
+    width:100%;
+    height:150px;
+    object-fit:cover;
+    border-radius:10px;
 }
 
-/* STATS */
+.meta small {display:block;}
+
 .stats {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    padding: 15px;
-    background: #f1f5f9;
-    border-radius: 12px;
-    color: #475569;
+    display:flex;
+    justify-content:space-between;
+    margin:10px 0;
 }
 
-.stat-value {
-    font-size: 18px;
-    font-weight: bold;
-    color: #f97316;
-}
+.warning {color:red;text-align:center;}
+.success {color:green;text-align:center;}
 
-/* ALERT */
-.warning {
-    text-align: center;
-    color: #b91c1c;
-    background: #fee2e2;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.success {
-    text-align: center;
-    color: #15803d;
-    background: #dcfce7;
-    padding: 10px;
-    border-radius: 10px;
-}
-
-/* MODAL */
+/* ✅ Crop Modal FIXED */
 #cropModal {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     background: rgba(0,0,0,0.95);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index:9999;
 }
 
-#cropImage {
-    border-radius: 10px;
-}
+#cropContainer {max-width:90%;max-height:75%;}
+#cropImage {max-width:100%;max-height:70vh;border:3px solid #fff;border-radius:10px;}
 
-/* MOBILE */
-@media(max-width:768px){
-    .controls{
-        flex-direction:column;
-        align-items:center;
-    }
+#cropButtons {margin-top:15px;display:flex;gap:10px;}
+
+.crop-save-btn {background:green;color:#fff;padding:10px 20px;}
+.crop-cancel-btn {background:red;color:#fff;padding:10px 20px;}
+
+#cropClose {
+    position:absolute;
+    top:15px;
+    right:20px;
+    font-size:30px;
+    background:none;
+    border:none;
+    color:#fff;
+    cursor:pointer;
 }
 </style>
+
 </head>
+
 <body>
-<h1>Master Minds</h1> 
-   <center> <h2>The Learning Hub<br>Compress, Convert & Crop Images</center></h2>
-<h4>Developed by Karthik Bonagiri</h4>
-<p>Upload or drop images, enter target size in KB, choose output format, crop with draggable box, then download separately or all at once.</p>
+
+<h1>Master Minds</h1>
+<h2>The Learning Hub</h2>
+<p>Compress, Convert & Crop Images</p>
 
 <div class="card">
-    <div class="controls">
-        <div class="control-group">
-            <label>Target Size (KB):</label>
-            <input id="sizeInput" type="number" min="10" max="10000" value="500" placeholder="Enter KB">
-        </div>
-        
-        <div class="control-group">
-            <label>Convert To Format:</label>
-            <select id="outFormat">
-                <option value="image/jpeg">JPG (Best for photos)</option>
-                <option value="image/png">PNG (Transparency support)</option>
-                <option value="image/webp">WebP (Modern format)</option>
-            </select>
-        </div>
 
-        <button class="upload-btn" type="button" onclick="document.getElementById('fileInput').click()">
-            <i>📁</i> Upload Images
-        </button>
-        <input id="fileInput" type="file" accept="image/*" multiple style="display:none">
+<!-- Adsense (Replace with your ID) -->
 
-        <button class="bulk-btn" id="bulkDownload">
-            <i>📦</i> Download All Images
-        </button>
+<ins class="adsbygoogle"
+  style="display:block"
+  data-ad-client="ca-pub-XXXX"
+  data-ad-slot="XXXX"
+  data-ad-format="auto"></ins>
+
+<div class="controls">
+    <div class="control-group">
+        <label>Target Size KB</label>
+        <input id="sizeInput" type="number" value="500">
     </div>
 
-    <div class="stats">
-        <div class="stat-item">
-            <span class="stat-value" id="totalImages">0</span>
-            Total Images
-        </div>
-        <div class="stat-item">
-            <span class="stat-value" id="totalSize">0 KB</span>
-            Original Size
-        </div>
-        <div class="stat-item">
-            <span class="stat-value" id="estimatedSize">0 KB</span>
-            Estimated Size
-        </div>
-    </div>
+```
+<div class="control-group">
+    <label>Format</label>
+    <select id="outFormat">
+        <option value="image/jpeg">JPG</option>
+        <option value="image/png">PNG</option>
+        <option value="image/webp">WEBP</option>
+    </select>
+</div>
 
-    <div class="warning" id="bulkWarning"></div>
-    <div class="success" id="successMessage"></div>
+<button class="upload-btn" onclick="fileInput.click()">Upload</button>
+<input type="file" id="fileInput" multiple hidden>
 
-    <div id="dropArea" class="drop">
-        <i>📁</i>
-        <div>Drag & Drop Images Here</div>
-        <small>or click to browse files (JPG, PNG, WebP, etc.)</small>
-    </div>
+<button class="bulk-btn" id="bulkDownload">Download All</button>
+```
 
-    <div id="results" class="grid"></div>
+</div>
+
+<div class="stats">
+    <div>Total: <span id="totalImages">0</span></div>
+    <div>Size: <span id="totalSize">0 KB</span></div>
+</div>
+
+<div id="dropArea" class="drop">Drop Images Here</div>
+
+<div id="results" class="grid"></div>
+
+<div class="warning" id="bulkWarning"></div>
+<div class="success" id="successMessage"></div>
+
 </div>
 
 <!-- Crop Modal -->
+
 <div id="cropModal">
     <button id="cropClose">&times;</button>
     <div id="cropContainer">
-        <img id="cropImage"/>
+        <img id="cropImage">
     </div>
     <div id="cropButtons">
-        <button id="cropSave" class="crop-save-btn">💾 Save Crop</button>
-        <button id="cropCancel" class="crop-cancel-btn">❌ Cancel</button>
+        <button id="cropSave" class="crop-save-btn">Save</button>
+        <button id="cropCancel" class="crop-cancel-btn">Cancel</button>
     </div>
 </div>
 
 <script>
-// DOM Elements
-const dropArea = document.getElementById('dropArea');
-const fileInput = document.getElementById('fileInput');
-const results = document.getElementById('results');
-const sizeInput = document.getElementById('sizeInput');
-const outFormatSelect = document.getElementById('outFormat');
-const bulkDownload = document.getElementById('bulkDownload');
-const bulkWarning = document.getElementById('bulkWarning');
-const successMessage = document.getElementById('successMessage');
-const totalImagesEl = document.getElementById('totalImages');
-const totalSizeEl = document.getElementById('totalSize');
-const estimatedSizeEl = document.getElementById('estimatedSize');
+const fileInput=document.getElementById('fileInput');
+const results=document.getElementById('results');
+const sizeInput=document.getElementById('sizeInput');
+const outFormat=document.getElementById('outFormat');
+const cropModal=document.getElementById('cropModal');
+const cropImage=document.getElementById('cropImage');
 
-// Crop Modal Elements
-const cropModal = document.getElementById('cropModal');
-const cropImage = document.getElementById('cropImage');
-const cropSave = document.getElementById('cropSave');
-const cropCancel = document.getElementById('cropCancel');
-const cropClose = document.getElementById('cropClose');
+let items=[];
+let cropper=null;
+let currentCropItem=null;
 
-// Global Variables
-let items = [];
-let cropper = null;
-let currentCropItem = null;
+fileInput.onchange=()=>handleFiles([...fileInput.files]);
 
-// Event Listeners
-dropArea.addEventListener('click', () => fileInput.click());
-dropArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropArea.style.borderColor = "#764ba2";
-    dropArea.style.background = "#ffe4ef";
+function handleFiles(files){
+files.forEach(file=>{
+let url=URL.createObjectURL(file);
+let obj={file,url,element:null};
+items.push(obj);
+renderItem(obj);
 });
-dropArea.addEventListener('dragleave', (e) => {
-    dropArea.style.borderColor = "#ff7eb3";
-    dropArea.style.background = "#fff0f5";
+}
+
+function renderItem(obj){
+let el=document.createElement('div');
+el.className='item';
+
+el.innerHTML=`
+<img class="thumb" src="${obj.url}">
+<div class="meta">
+<small>${obj.file.name}</small>
+</div>
+<button class="crop-btn">Crop</button>
+<button class="compress-btn">Download</button>
+<button class="remove-btn">X</button>
+`;
+
+results.appendChild(el);
+obj.element=el;
+
+el.querySelector('.remove-btn').onclick=()=>el.remove();
+el.querySelector('.crop-btn').onclick=()=>openCrop(obj);
+el.querySelector('.compress-btn').onclick=()=>download(obj);
+}
+
+function openCrop(obj){
+currentCropItem=obj;
+cropImage.src=obj.url;
+cropModal.style.display='flex';
+
+if(cropper) cropper.destroy();
+
+setTimeout(()=>{
+cropper=new Cropper(cropImage,{viewMode:1});
+},200);
+}
+
+function saveCrop(){
+let canvas=cropper.getCroppedCanvas();
+
+canvas.toBlob(blob=>{
+let file=new File([blob],currentCropItem.file.name);
+currentCropItem.file=file;
+currentCropItem.url=URL.createObjectURL(file);
+
+currentCropItem.element.querySelector('.thumb').src=currentCropItem.url;
+
+closeCrop();
 });
-dropArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropArea.style.borderColor = "#ff7eb3";
-    dropArea.style.background = "#fff0f5";
-    handleFiles([...e.dataTransfer.files]);
-});
-
-fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) {
-        handleFiles([...fileInput.files]);
-        fileInput.value = ''; // Reset input
-    }
-});
-
-sizeInput.addEventListener('input', updateStats);
-outFormatSelect.addEventListener('change', updateStats);
-
-bulkDownload.addEventListener('click', async () => {
-    if (items.length === 0) {
-        showWarning("Please upload some images first!");
-        return;
-    }
-    
-    bulkDownload.innerHTML = '<div class="loading"></div> Processing...';
-    bulkDownload.disabled = true;
-    
-    try {
-        for (let i = 0; i < items.length; i++) {
-            const obj = items[i];
-            await compressAndDownload(obj, null, false);
-            // Update progress
-            bulkDownload.innerHTML = `<div class="loading"></div> Processing ${i + 1}/${items.length}...`;
-        }
-        
-        showSuccess(`✅ Successfully downloaded ${items.length} images!`);
-    } catch (error) {
-        showWarning("Error during bulk download: " + error.message);
-    } finally {
-        bulkDownload.innerHTML = '<i>📦</i> Download All Images';
-        bulkDownload.disabled = false;
-    }
-});
-
-// Crop Modal Events
-cropSave.addEventListener('click', saveCrop);
-cropCancel.addEventListener('click', closeCropModal);
-cropClose.addEventListener('click', closeCropModal);
-
-// Functions
-function handleFiles(files) {
-    const images = files.filter(f => f.type.startsWith('image/'));
-    
-    if (images.length === 0) {
-        showWarning("Please select valid image files!");
-        return;
-    }
-    
-    images.forEach(file => {
-        const url = URL.createObjectURL(file);
-        const obj = {
-            file,
-            url,
-            originalSize: file.size,
-            compressedSize: null,
-            element: null
-        };
-        items.push(obj);
-        renderItem(obj);
-    });
-    
-    updateStats();
-    showSuccess(`✅ Added ${images.length} image(s) successfully!`);
 }
 
-function renderItem(obj) {
-    const el = document.createElement('div');
-    el.className = 'item';
-    el.innerHTML = `
-        <img class="thumb" src="${obj.url}" alt="${obj.file.name}">
-        <div class="meta">
-            <small><strong>${obj.file.name}</strong></small>
-            <small>Original: ${(obj.file.size / 1024).toFixed(1)} KB</small>
-            ${obj.compressedSize ? `<small>Compressed: ${(obj.compressedSize / 1024).toFixed(1)} KB</small>` : ''}
-        </div>
-        <button class="crop-btn">✂️ Crop Image</button>
-        <button class="compress-btn">📥 Compress & Download</button>
-        <button class="remove-btn">&times;</button>
-    `;
-    
-    results.appendChild(el);
-    obj.element = el;
-
-    // Event listeners for item buttons
-    el.querySelector('.remove-btn').addEventListener('click', () => removeItem(obj));
-    el.querySelector('.crop-btn').addEventListener('click', () => openCrop(obj));
-    el.querySelector('.compress-btn').addEventListener('click', () => compressAndDownload(obj, el));
+function closeCrop(){
+if(cropper){cropper.destroy();cropper=null;}
+cropModal.style.display='none';
 }
 
-function removeItem(obj) {
-    URL.revokeObjectURL(obj.url);
-    items = items.filter(i => i !== obj);
-    if (obj.element) {
-        obj.element.remove();
-    }
-    updateStats();
+function download(obj){
+let a=document.createElement('a');
+a.href=obj.url;
+a.download=obj.file.name;
+a.click();
 }
 
-function openCrop(obj) {
-    currentCropItem = obj;
-    cropImage.src = obj.url;
-    cropModal.style.display = 'flex';
-    
-    // Destroy existing cropper
-    if (cropper) {
-        cropper.destroy();
-    }
-    
-    // Initialize new cropper
-    cropper = new Cropper(cropImage, {
-        aspectRatio: NaN,
-        viewMode: 1,
-        autoCropArea: 1,
-        movable: true,
-        zoomable: true,
-        rotatable: true,
-        scalable: true,
-        background: false,
-        guides: true,
-        center: true,
-        highlight: false,
-        cropBoxMovable: true,
-        cropBoxResizable: true
-    });
-}
-
-function saveCrop() {
-    if (!cropper || !currentCropItem) return;
-
-    const canvas = cropper.getCroppedCanvas();
-    canvas.toBlob(blob => {
-        // Update the item with cropped image
-        const croppedFile = new File([blob], currentCropItem.file.name, {
-            type: currentCropItem.file.type,
-            lastModified: new Date().getTime()
-        });
-
-        // Update object
-        URL.revokeObjectURL(currentCropItem.url);
-        currentCropItem.file = croppedFile;
-        currentCropItem.url = URL.createObjectURL(croppedFile);
-        currentCropItem.originalSize = croppedFile.size;
-
-        // Update thumbnail and info
-        const thumb = currentCropItem.element.querySelector('.thumb');
-        const meta = currentCropItem.element.querySelector('.meta');
-        
-        thumb.src = currentCropItem.url;
-        meta.innerHTML = `
-            <small><strong>${currentCropItem.file.name}</strong></small>
-            <small>Original: ${(currentCropItem.file.size / 1024).toFixed(1)} KB</small>
-            ${currentCropItem.compressedSize ? `<small>Compressed: ${(currentCropItem.compressedSize / 1024).toFixed(1)} KB</small>` : ''}
-        `;
-
-        closeCropModal();
-        updateStats();
-        showSuccess("✅ Image cropped successfully!");
-    }, currentCropItem.file.type, 0.95);
-}
-
-function closeCropModal() {
-    if (cropper) {
-        cropper.destroy();
-        cropper = null;
-    }
-    cropModal.style.display = 'none';
-    currentCropItem = null;
-}
-
-async function compressAndDownload(obj, element = null, showIndividualSuccess = true) {
-    const maxKB = parseInt(sizeInput.value) || 500;
-    const outType = outFormatSelect.value;
-    
-    try {
-        const blob = await compressToTargetSize(obj.file, maxKB, outType);
-        obj.compressedSize = blob.size;
-        
-        const ext = outType === "image/png" ? ".png" : (outType === "image/webp" ? ".webp" : ".jpg");
-        const filename = obj.file.name.replace(/\.[^.]+$/, '') + "-compressed" + ext;
-        
-        await saveFile(blob, filename);
-        
-        if (element) {
-            const meta = element.querySelector('.meta');
-            meta.innerHTML = `
-                <small><strong>${obj.file.name}</strong></small>
-                <small>Original: ${(obj.originalSize / 1024).toFixed(1)} KB</small>
-                <small style="color: #00a000;">Compressed: ${(blob.size / 1024).toFixed(1)} KB</small>
-            `;
-        }
-        
-        if (showIndividualSuccess) {
-            showSuccess(`✅ Downloaded: ${filename} (${(blob.size / 1024).toFixed(1)} KB)`);
-        }
-        
-        updateStats();
-        
-    } catch (error) {
-        showWarning("Error compressing image: " + error.message);
-    }
-}
-
-async function compressToTargetSize(file, maxKB, outType) {
-    if (maxKB === 0) return file;
-    
-    let quality = 0.9;
-    let blob = await compressImage(file, quality, outType);
-    
-    // Reduce quality until we reach target size or minimum quality
-    while (blob.size / 1024 > maxKB && quality > 0.1) {
-        quality -= 0.1;
-        blob = await compressImage(file, quality, outType);
-    }
-    
-    return blob;
-}
-
-function compressImage(file, quality, outType) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            canvas.toBlob(blob => resolve(blob), outType, quality);
-        };
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = URL.createObjectURL(file);
-    });
-}
-
-async function saveFile(blob, filename) {
-    if ('showSaveFilePicker' in window) {
-        try {
-            const handle = await window.showSaveFilePicker({
-                suggestedName: filename,
-                types: [{
-                    description: 'Image',
-                    accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] }
-                }]
-            });
-            const writable = await handle.createWritable();
-            await writable.write(blob);
-            await writable.close();
-        } catch (err) {
-            // User canceled, fall back to download method
-            downloadFile(blob, filename);
-        }
-    } else {
-        downloadFile(blob, filename);
-    }
-}
-
-function downloadFile(blob, filename) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 100);
-}
-
-function updateStats() {
-    const totalImages = items.length;
-    const totalSize = items.reduce((sum, item) => sum + item.originalSize, 0);
-    const targetSize = parseInt(sizeInput.value) || 500;
-    const estimatedSize = totalImages * targetSize * 1024; // Rough estimate
-    
-    totalImagesEl.textContent = totalImages;
-    totalSizeEl.textContent = `${(totalSize / 1024).toFixed(0)} KB`;
-    estimatedSizeEl.textContent = `${(estimatedSize / 1024).toFixed(0)} KB`;
-}
-
-function showWarning(message) {
-    bulkWarning.textContent = message;
-    bulkWarning.style.display = 'block';
-    successMessage.style.display = 'none';
-    setTimeout(() => {
-        bulkWarning.style.display = 'none';
-    }, 5000);
-}
-
-function showSuccess(message) {
-    successMessage.textContent = message;
-    successMessage.style.display = 'block';
-    bulkWarning.style.display = 'none';
-    setTimeout(() => {
-        successMessage.style.display = 'none';
-    }, 5000);
-}
-
-// Initialize
-updateStats();
+document.getElementById('cropSave').onclick=saveCrop;
+document.getElementById('cropCancel').onclick=closeCrop;
+document.getElementById('cropClose').onclick=closeCrop;
 </script>
+
 </body>
 </html>
