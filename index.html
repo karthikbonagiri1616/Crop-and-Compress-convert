@@ -4,184 +4,151 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Master Minds - The Learning Hub | Image Tool</title>
+<title>Master Minds - The Learning Hub - Compress Tool</title>
 
-<!-- Cropper.js -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 
-/* RESET */
+/* ===== RESET ===== */
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
     font-family:'Inter',sans-serif;
     background:#0f172a;
     color:#fff;
+    padding:15px;
 }
 
 /* HEADER */
 h1{
     text-align:center;
-    margin-top:20px;
     font-size:2.2rem;
 }
-h4{
+h2{
     text-align:center;
     color:#cbd5f5;
 }
 p{
     text-align:center;
     color:#e2e8f0;
-    max-width:650px;
-    margin:10px auto 25px;
+    margin-bottom:20px;
 }
 
 /* ADS */
 .ad-box{
-    max-width:1000px;
-    margin:15px auto;
-    padding:12px;
+    background:#020617;
     border:1px dashed #334155;
     text-align:center;
+    padding:10px;
+    margin:10px auto;
     border-radius:8px;
-    color:#94a3b8;
-    background:#020617;
 }
 
 /* CARD */
 .card{
-    max-width:1200px;
-    margin:auto;
     background:#fff;
     color:#111;
-    border-radius:14px;
-    padding:25px;
+    border-radius:15px;
+    padding:20px;
+    max-width:1200px;
+    margin:auto;
 }
 
 /* CONTROLS */
 .controls{
     display:flex;
     flex-wrap:wrap;
-    gap:15px;
+    gap:10px;
     justify-content:center;
 }
 .control-group{
     display:flex;
     flex-direction:column;
-    min-width:170px;
-}
-label{
-    font-size:13px;
 }
 
 /* INPUT */
 input,select{
-    padding:10px;
-    border-radius:8px;
+    padding:8px;
+    border-radius:6px;
     border:1px solid #ddd;
 }
 
-/* BUTTON */
-button{
-    border:none;
-    padding:10px 16px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:600;
-}
-
-/* COLORS */
+/* BUTTON COLORS */
 .upload-btn{background:#f97316;color:#fff;}
 .bulk-btn{background:#020617;color:#fff;}
+.compress-btn{background:#2563eb;color:#fff;width:100%;margin-top:8px;}
+.crop-btn{background:#ec4899;color:#fff;width:100%;margin-top:6px;}
+.remove-btn{background:red;color:#fff;position:absolute;top:5px;right:5px;}
 
-.compress-btn{
-    background:#2563eb;
-    color:#fff;
-    width:100%;
-    margin-top:10px;
-}
-.crop-btn{
-    background:#ec4899;
-    color:#fff;
-    width:100%;
-    margin-top:6px;
-}
-
-/* GRID */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-    gap:20px;
-}
-
-/* ITEM */
-.item{
-    background:#fff;
-    border-radius:12px;
-    padding:12px;
-    position:relative;
-}
-.thumb{
-    width:100%;
-    height:170px;
-    object-fit:cover;
-    border-radius:8px;
-}
-.remove-btn{
-    position:absolute;
-    top:8px;
-    right:8px;
-    background:red;
-    color:#fff;
+button{
+    border:none;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
 }
 
 /* DROP */
 .drop{
     border:2px dashed #f97316;
-    padding:50px;
-    text-align:center;
-    border-radius:12px;
     background:#fff7ed;
+    padding:40px;
+    text-align:center;
+    border-radius:10px;
     color:#ea580c;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:15px;
+}
+.item{
+    background:#fff;
+    border-radius:10px;
+    padding:10px;
+    position:relative;
+}
+.thumb{
+    width:100%;
+    height:160px;
+    object-fit:cover;
 }
 
 /* STATS */
 .stats{
     display:flex;
     justify-content:space-around;
-    margin:15px 0;
-    padding:15px;
+    margin:10px 0;
     background:#f1f5f9;
-    border-radius:10px;
+    padding:10px;
+    border-radius:8px;
 }
-.stat-value{
-    color:#f97316;
-    font-weight:bold;
-}
+.stat-value{color:#f97316;}
 
 /* ALERT */
-.warning{
-    background:#fee2e2;
-    color:#b91c1c;
-    padding:10px;
-    text-align:center;
-}
-.success{
-    background:#dcfce7;
-    color:#15803d;
-    padding:10px;
-    text-align:center;
-}
+.warning{background:#fee2e2;color:#b91c1c;text-align:center;}
+.success{background:#dcfce7;color:#15803d;text-align:center;}
 
-/* MOBILE */
-@media(max-width:768px){
-    .controls{flex-direction:column;}
+/* CROP MODAL (IMPORTANT - KEPT) */
+#cropModal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:black;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
 }
+#cropImage{max-width:90%;}
+#cropButtons{margin-top:10px;}
 
 </style>
 </head>
@@ -189,16 +156,17 @@ button{
 <body>
 
 <h1>Master Minds - The Learning Hub</h1>
-<h4>Compress, Convert & Crop Images</h4>
-<p>Upload or drop images, compress, crop, and download easily.</p>
+<h2>Compress, Convert & Crop Images</h2>
+<p>Upload images and download optimized files easily.</p>
 
-<div class="ad-box">Google AdSense Top Banner</div>
+<div class="ad-box">Google Ads Top</div>
 
 <div class="card">
 
 <div class="controls">
+
 <div class="control-group">
-<label>Target Size (KB)</label>
+<label>Target Size</label>
 <input id="sizeInput" type="number" value="500">
 </div>
 
@@ -215,6 +183,7 @@ button{
 <input id="fileInput" type="file" multiple style="display:none">
 
 <button class="bulk-btn" id="bulkDownload">Download All</button>
+
 </div>
 
 <div class="stats">
@@ -223,17 +192,20 @@ button{
 <div><span id="estimatedSize">0 KB</span><br>Estimate</div>
 </div>
 
+<div class="warning" id="bulkWarning"></div>
+<div class="success" id="successMessage"></div>
+
 <div id="dropArea" class="drop">Drag & Drop Images</div>
 
 <div id="results" class="grid"></div>
 
 </div>
 
-<div class="ad-box">Google AdSense Bottom Banner</div>
+<div class="ad-box">Google Ads Bottom</div>
 
-<!-- ⚠️ KEEP YOUR ORIGINAL JS BELOW (NO CHANGE) -->
+<!-- KEEP YOUR ORIGINAL JS EXACTLY BELOW -->
 <script>
-/* PASTE YOUR ORIGINAL JS HERE WITHOUT CHANGES */
+/* 👉 PASTE YOUR FULL ORIGINAL JS HERE (DO NOT MODIFY) */
 </script>
 
 </body>
