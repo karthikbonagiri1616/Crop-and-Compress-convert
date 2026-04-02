@@ -3,93 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Master Minds - The Learning Hub - Compress Tool</title>
+<title>Master Minds - The Learning Hub - Image Tool</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-
 <style>
-
-/* ===== RESET ===== */
 *{margin:0;padding:0;box-sizing:border-box;}
 
 body{
-    font-family:'Inter',sans-serif;
+    font-family:"Segoe UI",sans-serif;
     background:#0f172a;
     color:#fff;
-    padding:15px;
+    padding:20px;
 }
 
 /* HEADER */
-h1{
-    text-align:center;
-    font-size:2.2rem;
-}
-h2{
-    text-align:center;
-    color:#cbd5f5;
-}
-p{
-    text-align:center;
-    color:#e2e8f0;
-    margin-bottom:20px;
-}
-
-/* ADS */
-.ad-box{
-    background:#020617;
-    border:1px dashed #334155;
-    text-align:center;
-    padding:10px;
-    margin:10px auto;
-    border-radius:8px;
-}
+h1{text-align:center;font-size:2.2em;}
+h2{text-align:center;color:#cbd5f5;margin-bottom:10px;}
+p{text-align:center;color:#e2e8f0;margin-bottom:20px;}
 
 /* CARD */
 .card{
+    max-width:1200px;
+    margin:auto;
     background:#fff;
     color:#111;
     border-radius:15px;
-    padding:20px;
-    max-width:1200px;
-    margin:auto;
+    padding:25px;
 }
 
 /* CONTROLS */
 .controls{
     display:flex;
+    gap:15px;
     flex-wrap:wrap;
-    gap:10px;
     justify-content:center;
 }
-.control-group{
-    display:flex;
-    flex-direction:column;
-}
+.control-group{display:flex;flex-direction:column;}
 
-/* INPUT */
 input,select{
-    padding:8px;
-    border-radius:6px;
+    padding:10px;
+    border-radius:8px;
     border:1px solid #ddd;
 }
 
 /* BUTTON COLORS */
+button{
+    border:none;
+    padding:10px 15px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
 .upload-btn{background:#f97316;color:#fff;}
 .bulk-btn{background:#020617;color:#fff;}
 .compress-btn{background:#2563eb;color:#fff;width:100%;margin-top:8px;}
 .crop-btn{background:#ec4899;color:#fff;width:100%;margin-top:6px;}
 .remove-btn{background:red;color:#fff;position:absolute;top:5px;right:5px;}
-
-button{
-    border:none;
-    padding:8px 12px;
-    border-radius:6px;
-    cursor:pointer;
-}
 
 /* DROP */
 .drop{
@@ -97,7 +68,7 @@ button{
     background:#fff7ed;
     padding:40px;
     text-align:center;
-    border-radius:10px;
+    border-radius:12px;
     color:#ea580c;
 }
 
@@ -123,25 +94,35 @@ button{
 .stats{
     display:flex;
     justify-content:space-around;
-    margin:10px 0;
-    background:#f1f5f9;
+    margin:15px 0;
     padding:10px;
+    background:#f1f5f9;
     border-radius:8px;
 }
-.stat-value{color:#f97316;}
+.stat-value{color:#f97316;font-weight:bold;}
 
 /* ALERT */
 .warning{background:#fee2e2;color:#b91c1c;text-align:center;}
 .success{background:#dcfce7;color:#15803d;text-align:center;}
 
-/* CROP MODAL (IMPORTANT - KEPT) */
+/* ADS */
+.ad-box{
+    background:#020617;
+    border:1px dashed #334155;
+    text-align:center;
+    padding:10px;
+    margin:10px auto;
+    border-radius:8px;
+}
+
+/* CROP MODAL */
 #cropModal{
     position:fixed;
     top:0;
     left:0;
     width:100%;
     height:100%;
-    background:black;
+    background:rgba(0,0,0,0.9);
     display:none;
     justify-content:center;
     align-items:center;
@@ -150,6 +131,9 @@ button{
 #cropImage{max-width:90%;}
 #cropButtons{margin-top:10px;}
 
+@media(max-width:768px){
+    .controls{flex-direction:column;align-items:center;}
+}
 </style>
 </head>
 
@@ -157,16 +141,15 @@ button{
 
 <h1>Master Minds - The Learning Hub</h1>
 <h2>Compress, Convert & Crop Images</h2>
-<p>Upload images and download optimized files easily.</p>
+<p>Upload images, compress, crop and download easily.</p>
 
 <div class="ad-box">Google Ads Top</div>
 
 <div class="card">
 
 <div class="controls">
-
 <div class="control-group">
-<label>Target Size</label>
+<label>Target Size (KB)</label>
 <input id="sizeInput" type="number" value="500">
 </div>
 
@@ -179,11 +162,10 @@ button{
 </select>
 </div>
 
-<button class="upload-btn" onclick="fileInput.click()">Upload</button>
+<button class="upload-btn" onclick="document.getElementById('fileInput').click()">Upload</button>
 <input id="fileInput" type="file" multiple style="display:none">
 
 <button class="bulk-btn" id="bulkDownload">Download All</button>
-
 </div>
 
 <div class="stats">
@@ -195,7 +177,9 @@ button{
 <div class="warning" id="bulkWarning"></div>
 <div class="success" id="successMessage"></div>
 
-<div id="dropArea" class="drop">Drag & Drop Images</div>
+<div id="dropArea" class="drop">
+Drag & Drop Images Here
+</div>
 
 <div id="results" class="grid"></div>
 
@@ -203,9 +187,9 @@ button{
 
 <div class="ad-box">Google Ads Bottom</div>
 
-<!-- KEEP YOUR ORIGINAL JS EXACTLY BELOW -->
+<!-- 🔥 IMPORTANT: YOUR ORIGINAL JS BELOW (UNCHANGED) -->
 <script>
-/* 👉 PASTE YOUR FULL ORIGINAL JS HERE (DO NOT MODIFY) */
+/* 👉 PASTE YOUR ORIGINAL FULL JS HERE WITHOUT ANY CHANGE */
 </script>
 
 </body>
